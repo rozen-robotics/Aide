@@ -1,0 +1,22 @@
+{% extends 'portal_base.html' %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            {% for product in products %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <img class="card-img-top" src="{{ product.image.url }}" alt="{{ product.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text"><strong>{{ product.price }} руб</strong></p>
+                            <a href="{% url 'create_payment' product.id %}"
+                               class="btn btn-outline-primary waves-effect">Заказать</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends 'portal_base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container mt-5">
+        <h2>Регистрация на рейс</h2>
+
+        <div class="card shadow-lg">
+            <div class="card-body">
+
+                <!-- Форма выбора рейса -->
+                <form id="check-in-form" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="train-ticket" class="form-label">Выберите рейс:</label>
+                        <select class="form-select" id="train-ticket" name="train_ticket_id" required>
+                            {% for ticket in user.tickets.all %}
+                                <option value="{{ ticket.id }}">
+                                    {{ ticket.train.train_number }}: {{ ticket.train.departure_station }}
+                                    - {{ ticket.train.arrival_station }} ({{ ticket.train.departure_time|date:"d.m.Y H:i" }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    {% if error %}
+                        <div class="alert alert-solid-danger mt-3" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+
+                    {% if not is_bio %}
+                        <!-- Видеопоток с камеры -->
+                        <div class="mb-3" id="video-container">
+                            <label for="camera" class="form-label">Сделайте фото для биометрии:</label>
+                            <div class="video-container text-center mb-3">
+                                <canvas id="video-canvas" class="border rounded"></canvas>
+                                <img id="photo" class="img-thumbnail d-none" alt="Сделанное фото">
+                            </div>
+                            <button type="button" class="btn btn-primary mb-3 w-100" id="take-photo">Сделать фото
+                            </button>
+                        </div>
+
+                        <!-- Показ фотографии -->
+                        <div id="photo-result" class="mb-3 d-none">
+                            <label for="photo" class="form-label">Сделанное фото:</label>
+                            <div class="photo-container mb-3">
+                                <img id="photo-result-img" class="img-thumbnail" alt="Сделанное фото">
+                            </div>
+                            <button type="button" class="btn btn-secondary mb-3 w-100 d-none" id="retake-photo">
+                                Переснять
+                            </button>
+                            <input type="hidden" name="photo_data" id="photo-data">
+
+                        </div>
+                    {% endif %}
+
+                    <!-- Кнопка отправки -->
+                    <button type="submit" class="btn btn-success w-100">Отправить</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block css %}
+    <style>
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 300px; /* Установите нужную высоту */
+            overflow: hidden;
+        }
+
+        #video-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #photo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .photo-container {
+            position: relative;
+            width: 100%;
+            height: 300px; /* Установите нужную высоту */
+            overflow: hidden;
+        }
+
+        #photo-result-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+{% endblock %}
+
+{% block js %}
+    {% if not is_bio %}
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const videoCanvas = document.getElementById('video-canvas');
+                const photoImg = document.getElementById('photo');
+                const takePhotoButton = document.getElementById('take-photo');
+                const retakePhotoButton = document.getElementById('retake-photo');
+                const photoResult = document.getElementById('photo-result');
+                const photoResultImg = document.getElementById('photo-result-img');
+                const photoDataInput = document.getElementById('photo-data');
+
+                let stream;
+
+                // Получение видеопотока с камеры
+                navigator.mediaDevices.getUserMedia({video: true})
+                    .then(cameraStream => {
+                        stream = cameraStream;
+                        const context = videoCanvas.getContext('2d');
+                        videoCanvas.width = 640; // Установите желаемую ширину
+                        videoCanvas.height = 480; // Установите желаемую высоту
+                        const video = document.createElement('video');
+                        video.srcObject = stream;
+                        video.play();
+
+                        function drawFrame() {
+                            context.drawImage(video, 0, 0, videoCanvas.width, videoCanvas.height);
+                            requestAnimationFrame(drawFrame);
+                        }
+
+                        drawFrame();
+                    })
+                    .catch(error => {
+                        console.error("Ошибка при доступе к камере:", error);
+                    });
+
+                // Снятие фотографии
+                takePhotoButton.addEventListener('click', () => {
+                    const context = videoCanvas.getContext('2d');
+                    const imageDataURL = videoCanvas.toDataURL('image/png');
+                    photoImg.src = imageDataURL;
+                    photoResultImg.src = imageDataURL;
+                    photoResult.classList.remove('d-none');
+                    photoImg.classList.remove('d-none');
+                    videoCanvas.classList.add('d-none');
+                    takePhotoButton.classList.add('d-none');
+                    retakePhotoButton.classList.remove('d-none');
+                    photoDataInput.value = imageDataURL;
+                    document.getElementById('video-container').classList.add('d-none');
+                });
+
+                // Пересъемка фотографии
+                retakePhotoButton.addEventListener('click', () => {
+                    photoResult.classList.add('d-none');
+                    photoImg.classList.add('d-none');
+                    videoCanvas.classList.remove('d-none');
+                    takePhotoButton.classList.remove('d-none');
+                    retakePhotoButton.classList.add('d-none');
+                    document.getElementById('video-container').classList.remove('d-none');
+                });
+            });
+        </script>
+    {% endif %}
+{% endblock %}

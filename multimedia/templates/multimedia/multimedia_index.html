@@ -1,0 +1,47 @@
+{% extends 'portal_base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <img class="card-img-top" src="{% static 'assets/img/multimedia/rutube_logo.jpg' %}" alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title">Фильмы</h5>
+                        <p class="card-text">
+                            Смотрите фильмы из библиотеки RUTUBE
+                        </p>
+                        <a href="{% url 'films' %}" class="btn btn-outline-primary waves-effect">Фильмы</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Лучшее в магазине</h5>
+                        <h6 class="card-subtitle">{{ best_product.name }}</h6>
+                        <img class="img-fluid d-flex mx-auto my-4 rounded" src="{{ best_product.image.url }}"
+                             alt="{{ best_product.name }}">
+                        <p class="card-text">{{ best_product.description }}</p>
+                        <p class="card-text"><strong>{{ best_product.price }} руб</strong></p>
+                        <a href="{% url 'shop' %}"
+                           class="btn btn-outline-primary waves-effect">В Магазин</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <img class="card-img-top" src="{% static 'assets/img/multimedia/hits.jpg' %}" alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title">Музыка</h5>
+                        <p class="card-text">
+                            Слушайте музыку из библиотеки Яндекс.Музыка
+                        </p>
+                        <a href="{% url 'music' %}" class="btn btn-outline-primary waves-effect">Музыка</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

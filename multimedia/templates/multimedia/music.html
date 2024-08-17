@@ -1,0 +1,45 @@
+{% extends 'portal_base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <img class="card-img-top" src="{% static 'assets/img/multimedia/podcast.jpg' %}"
+                         alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title">Подкасты</h5>
+                        <p class="card-text">
+                            Лучшие подкасты от Яндекс.Музыки
+                        </p>
+                        <a href="{% url 'music' %}" class="btn btn-outline-primary waves-effect">Подкасты</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <img class="card-img-top" src="{% static 'assets/img/multimedia/hits.jpg' %}" alt="Card image cap">
+                    <div class="card-body">
+                        <h5 class="card-title">Летние хиты</h5>
+                        <p class="card-text">
+                            Попробуйте лучшие хиты этого лета в Моя Волна
+                        </p>
+                        <a href="{% url 'music' %}" class="btn btn-outline-primary waves-effect">Хиты</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <iframe frameborder="0" allow="clipboard-write" style="border:none;width:100%;height:150px;"
+                                width="100%" height="150" src="https://music.yandex.ru/iframe/track/108591168/23968937">
+                            Слушайте <a href='https://music.yandex.ru/album/23968937/track/108591168'>Матушка</a> — <a
+                                href='https://music.yandex.ru/artist/17488443'>Татьяна Куртукова</a> на Яндекс Музыке
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
