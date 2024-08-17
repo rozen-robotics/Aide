@@ -13,7 +13,10 @@ from services.biometrics import register_face, recognize_face
 
 @login_required(login_url='login')
 def departure_index(request):
-    cruise = RobotProfile.objects.get(user=request.user).now_cruise
+    try:
+        cruise = RobotProfile.objects.get(user=request.user).now_cruise
+    except:
+        return JsonResponse({'status': 'error', 'message': 'You are not a Stewart Robot or dont you have a current train.'})
     return (render(request, 'departure/departure.html', context={'cruise': cruise}))
 
 @login_required(login_url='login')

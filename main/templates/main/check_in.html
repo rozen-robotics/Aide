@@ -28,7 +28,9 @@
                         </div>
                     {% endif %}
 
-                    {% if not is_bio %}
+                    {% if is_bio %}
+                        <p>Ваша биометрия уже есть в базе, можете не беспокоиться</p>
+                        {% else %}
                         <!-- Видеопоток с камеры -->
                         <div class="mb-3" id="video-container">
                             <label for="camera" class="form-label">Сделайте фото для биометрии:</label>
