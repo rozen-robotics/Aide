@@ -17,7 +17,7 @@ def departure_index(request):
         cruise = RobotProfile.objects.get(user=request.user).now_cruise
     except:
         return JsonResponse({'status': 'error', 'message': 'You are not a Stewart Robot or dont you have a current train.'})
-    return (render(request, 'departure/departure.html', context={'cruise': cruise}))
+    return (render(request, 'robot/departure.html', context={'cruise': cruise}))
 
 @login_required(login_url='login')
 def recognize_face_ajax(request):
@@ -27,7 +27,6 @@ def recognize_face_ajax(request):
 
         if photo_data:
             recognize_result = recognize_face(photo_data, cruise_id)
-            print(recognize_result)
             if recognize_result == 0:
                 return JsonResponse({'status': 'no_face'})
             elif recognize_result == 1:
