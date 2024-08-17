@@ -11,12 +11,12 @@ from django.http import HttpResponse
 from users.models import TrainTicket, BiometricProfile, RobotProfile
 from services.biometrics import register_face, recognize_face
 
-
+@login_required(login_url='login')
 def departure_index(request):
     cruise = RobotProfile.objects.get(user=request.user).now_cruise
     return (render(request, 'departure/departure.html', context={'cruise': cruise}))
 
-
+@login_required(login_url='login')
 def recognize_face_ajax(request):
     if request.method == 'POST':
         photo_data = request.POST.get('photo_data')

@@ -10,4 +10,6 @@ urlpatterns = [
     path('create-payment/<int:product>', views.create_payment, name='create_payment'),
     path('check-payment-status/', views.check_payment_status, name='check_payment_status'),
 
+    path('gpt', views.gpt, name='gpt'),
+    path('process_question_ajax/', views.process_question_ajax, name='process_question_ajax'),
 ]

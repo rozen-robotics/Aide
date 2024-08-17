@@ -30583,6 +30583,23 @@ html:not([dir=rtl]) .switches-stacked .switch {
   right: 6px;
 }
 
+
+
+.avatar-xxl {
+  width: 6rem;
+  height: 6rem;
+}
+.avatar-xxl .avatar-initial {
+  font-size: 3rem;
+}
+.avatar-xxl.avatar-online:after, .avatar-xxl.avatar-offline:after, .avatar-xxl.avatar-away:after, .avatar-xxl.avatar-busy:after {
+  width: 0.8rem;
+  height: 0.8rem;
+  right: 6px;
+}
+
+
+
 .avatar-group .avatar {
   transition: all 0.25s ease;
 }

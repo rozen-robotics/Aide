@@ -1,0 +1,96 @@
+{% extends 'portal_base.html' %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'assets/vendor/css/pages/app-chat.css' %}"/>
+
+    <style>
+        .loader {
+            display: none;
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="app-chat card overflow-hidden">
+            <div class="row g-0">
+                <!-- Chat History -->
+                <div class="col app-chat-history">
+                    <div class="chat-history-wrapper">
+                        <div class="chat-history-header border-bottom">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex overflow-hidden align-items-center">
+                                    <div class="flex-shrink-0 avatar avatar-online">
+                                        <img src="{% static 'assets/img/multimedia/ai.jpg' %}" alt="AI avatar"
+                                             class="rounded-circle" data-bs-toggle="sidebar">
+                                    </div>
+                                    <div class="chat-contact-info flex-grow-1 ms-4">
+                                        <h6 class="m-0 fw-normal">РЖД.ии</h6>
+                                        <small class="user-status text-body">Виртуальный проводник</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-history-body ps ps--active-y">
+                            <ul class="list-unstyled chat-history" id="messages">
+                                <li class="chat-message">
+                                    <div class="d-flex overflow-hidden">
+                                        <div class="user-avatar flex-shrink-0 me-4">
+                                            <div class="avatar avatar-sm">
+                                                <img src="{% static 'assets/img/multimedia/ai.jpg' %}" alt="AI avatar"
+                                                     class="rounded-circle">
+                                            </div>
+                                        </div>
+                                        <div class="chat-message-wrapper flex-grow-1">
+                                            <div class="chat-message-text">
+                                                <p class="mb-0">Привет, {{ user.first_name }}! Я – виртуальный
+                                                    проводник, могу помочь в поездке или рассказать об интересных местах
+                                                    города</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <!-- Сообщения будут добавляться сюда -->
+
+                            </ul>
+                            <div class="loader" id="loader">
+                                <div class="spinner-grow text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Chat message form -->
+                    <div class="chat-history-footer">
+                        <form id="chat-form" method="post"
+                              class="form-send-message d-flex justify-content-between align-items-center">
+                            {% csrf_token %}
+                            <input type="hidden" id="user-image-path"
+                                   value="{% static 'assets/img/multimedia/user.jpg' %}">
+                            <input type="hidden" id="ai-image-path" value="{% static 'assets/img/multimedia/ai.jpg' %}">
+                            <input class="form-control message-input me-4 shadow-none" id="user-input"
+                                   placeholder="Спросите что-нибудь...">
+                            <div class="message-actions d-flex align-items-center">
+                                <button class="btn btn-icon btn-primary waves-effect waves-light" type="submit">
+                                    <i class="ri-send-plane-line ri-16px"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- /Chat History -->
+            <div class="app-overlay"></div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block js %}
+
+    <script src="{% static 'assets/js/gpt.js' %}"></script>
+{% endblock %}

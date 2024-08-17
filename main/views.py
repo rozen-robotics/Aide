@@ -7,12 +7,13 @@ from django.http import HttpResponse
 from users.models import TrainTicket, BiometricProfile
 from services.biometrics import register_face, recognize_face
 
+@login_required(login_url='login')
 def index(request):
     return (render(request, 'main/index.html'))
 
 
 
-@login_required
+@login_required(login_url='login')
 def check_in(request):
     if request.method == 'POST':
         train_ticket_id = request.POST.get('train_ticket_id')

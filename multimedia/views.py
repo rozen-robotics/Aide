@@ -1,3 +1,9 @@
+import json
+import urllib.request
+import urllib.parse
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from yoomoney import Quickpay, Client
 from django.conf import settings
 from django.shortcuts import render, redirect
@@ -8,7 +14,8 @@ from RobotStuartRzd.keys import youmoney_token
 from robot_functions.functions import procces_order
 from users.models import User, TrainTicket
 
-@login_required
+
+@login_required(login_url='login')
 def create_payment(request, product):
     user = request.user
     label = str(uuid.uuid4())  # Генерация уникальной метки
@@ -35,7 +42,8 @@ def create_payment(request, product):
 
     return redirect(quickpay.redirected_url)
 
-@login_required
+
+@login_required(login_url='login')
 def check_payment_status(request):
     user = request.user
     order = UserOrder.objects.filter(user=user, is_active=False).last()
@@ -50,23 +58,61 @@ def check_payment_status(request):
                 # Если оплата успешна, активируйте подписку
                 order.is_active = True
                 order.save()
-                procces_order(order.id, TrainTicket.objects.filter(user=user).last().seat_number) #запрос к роботу
+                procces_order(order.id, TrainTicket.objects.filter(user=user).last().seat_number)  # запрос к роботу
                 return render(request, 'multimedia/success.html')
     except:
         pass
 
     return render(request, 'multimedia/failure.html')
 
+
+@login_required(login_url='login')
 def product_list(request):
     products = Product.objects.all()
     return render(request, 'multimedia/product_list.html', {'products': products})
 
+
+@login_required(login_url='login')
 def multimedia_index(request):
     best_product = Product.objects.first()
     return render(request, 'multimedia/multimedia_index.html', {'best_product': best_product})
 
+
+@login_required(login_url='login')
 def films(request):
     return render(request, 'multimedia/films.html')
 
+
+@login_required(login_url='login')
 def music(request):
     return render(request, 'multimedia/music.html')
+
+
+@login_required(login_url='login')
+def gpt(request):
+    return render(request, 'multimedia/gpt.html')
+
+
+@login_required(login_url='login')
+@csrf_exempt
+def process_question_ajax(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            question = data.get('text', '')
+
+            # Отправка запроса на AI-сервис с использованием urllib
+            ai_url = 'https://foteapi2.pythonanywhere.com/process'
+            headers = {'Content-Type': 'application/json'}
+            payload = json.dumps({'request_type': 'rzd_question_answering', 'text': question}).encode('utf-8')
+
+            req = urllib.request.Request(ai_url, data=payload, headers=headers)
+            with urllib.request.urlopen(req) as response:
+                response_data = json.loads(response.read().decode('utf-8'))
+
+            return JsonResponse({'response': response_data})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Произошла ошибка при генерации ответа'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
