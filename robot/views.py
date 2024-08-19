@@ -35,3 +35,12 @@ def recognize_face_ajax(request):
                 return JsonResponse({'status': 'success', 'data': recognize_result})
 
     return JsonResponse({'status': 'error', 'message': 'Некорректный запрос.'})
+
+
+@login_required(login_url='login')
+def voice_controll_test(request):
+    try:
+        cruise = RobotProfile.objects.get(user=request.user).now_cruise
+    except:
+        return JsonResponse({'status': 'error', 'message': 'You are not a Stewart Robot or dont you have a current train.'})
+    return (render(request, 'robot/voice_controll_test.html', context={'cruise': cruise}))
