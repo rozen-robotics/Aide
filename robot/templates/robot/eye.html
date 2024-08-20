@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Анимация Глаз Робота</title>
+    <title>Голосовой помощник</title>
+
     <style>
         body {
             margin: 0;
@@ -39,15 +39,17 @@
             animation: eye-move 4s infinite;
         }
 
-        .eye::before {
-            content: '';
-            width: 40%;
-            height: 30%;
-            background-color: #fff;
-            border-radius: 70px;
+        .pupil {
             position: absolute;
-            animation: dot-move-idle 8s infinite;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
+
 
         .status {
             position: absolute;
@@ -182,17 +184,139 @@
     </style>
 </head>
 <body>
+<form method="post">
+    {% csrf_token %}
+</form>
+<video id="video" width="640" height="480" autoplay style="display: none;"></video>
 <div class="robot">
-    <div class="eye mask mask-squircle" id="left-eye"></div>
-    <div class="eye mask mask-squircle" id="right-eye"></div>
-    <div class="status" id="status-text">Бездействие</div>
+    <div class="eye mask mask-squircle" id="left-eye">
+        <div class="pupil" id="pupil-left"></div>
+    </div>
+    <div class="eye mask mask-squircle" id="right-eye">
+        <div class="pupil" id="pupil-right"></div>
+    </div>
+    <div class="status" id="status-text">Нажмите "Начать", чтобы активировать помощника.</div>
 </div>
-<div class="controls">
-    <button onclick="setStatus('idle')">Бездействие</button>
-    <button onclick="setStatus('listening')">Слушание</button>
-    <button onclick="setStatus('speaking')">Говорение</button>
-</div>
+
 <script>
+    window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ru-RU';
+    recognition.interimResults = false;
+    recognition.continuous = true;
+    let userStartedSpeaking = false;
+
+    let isListeningForCommand = false;
+    let chatHistory = [];
+    const loaderElement = document.getElementById("status-text");
+
+    // Функция озвучивания текста
+    function speakText(text) {
+        const synth = window.speechSynthesis;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ru-RU'; // Задаем язык озвучки
+        utterance.pitch = 0.2;
+
+        // Pause recognition while speaking
+        recognition.stop();
+        setStatus('speaking');
+        synth.speak(utterance);
+
+        // Отслеживаем окончание озвучивания
+        utterance.onend = () => {
+            loaderElement.innerText = "Робот все сказал";
+            setStatus('listening');
+            recognition.start();
+            userStartedSpeaking = false;
+            // Установка таймера на 8 секунд
+            const stopListeningTimeout = setTimeout(() => {
+                if (!userStartedSpeaking) {
+                    isListeningForCommand = false;
+                    setStatus('idle');
+                    loaderElement.innerText = "Скажите 'Алиса', чтобы начать";
+                    recognition.stop();
+                }
+            }, 15000);
+        }
+    }
+
+    function startRecognition() {
+        loaderElement.innerText = "Скажите 'Алиса', чтобы начать";
+        recognition.start();
+    }
+
+    recognition.onresult = async (event) => {
+        const transcript = event.results[event.results.length - 1][0].transcript.trim();
+        if (transcript !== "") {
+            userStartedSpeaking = true;
+        }
+
+
+        if (!isListeningForCommand && transcript.toLowerCase() === "алиса") {
+            isListeningForCommand = true;
+            loaderElement.innerText = "Слушаю команду...";
+            setStatus('listening');
+        } else if (isListeningForCommand && transcript !== "") {
+            chatHistory.push({role: 'user', content: transcript});
+            loaderElement.innerText = "Отправка запроса...";
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            try {
+                const response = await fetch('{% url 'process_question_ajax' %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        request_type: 'question_answering',
+                        text: `Вот история чата: ${chatHistory.map(entry => `${entry.role}: ${entry.content}`).join(' ')}`
+                    })
+                });
+
+                const data = await response.json();
+                chatHistory.push({role: 'assistant', content: data.response});
+                console.log("Ответ:", data.response);
+                loaderElement.innerText = "Ответ получен. Озвучиваю...";
+
+                // Озвучка ответа и ожидание следующего ввода пользователя
+                speakText(data.response);
+            } catch (error) {
+                console.error("Ошибка:", error);
+                setStatus('idle');
+                loaderElement.innerText = "Произошла ошибка, скажите 'Алиса' для повторного начала.";
+                isListeningForCommand = false;
+                recognition.start();
+            }
+        }
+    };
+
+    recognition.onerror = (event) => {
+        console.error("Ошибка распознавания:", event.error);
+        recognition.start(); // Перезапуск в случае ошибки
+    };
+
+    recognition.onend = () => {
+        if (!isListeningForCommand) {
+            loaderElement.innerText = "Скажите 'Алиса', чтобы начать";
+            recognition.start(); // Цикличное прослушивание
+        }
+    };
+
+    // Начинаем прослушивание после первого нажатия
+    document.body.addEventListener('click', () => {
+        if (!recognition.running) {
+            startRecognition();
+        }
+    }, {once: true});
+
+    // Очистка истории чата каждые 2 минуты
+    setInterval(() => {
+        chatHistory = [];
+        console.log("История чата очищена.");
+    }, 120000); // 120000 миллисекунд = 2 минуты
+
     function setStatus(status) {
         const leftEye = document.getElementById('left-eye');
         const rightEye = document.getElementById('right-eye');
@@ -203,28 +327,87 @@
                 leftEye.style.animation = 'eye-move 5s infinite';
                 rightEye.style.animation = 'eye-move 5s infinite';
                 statusText.textContent = 'Бездействие';
-                document.querySelectorAll('.eye::before').forEach(dot => {
-                    dot.style.animation = 'dot-move-idle 10s infinite';
-                });
                 break;
             case 'listening':
                 leftEye.style.animation = 'eye-listening-left 2s infinite';
                 rightEye.style.animation = 'eye-listening-right 2s infinite';
                 statusText.textContent = 'Слушание';
-                document.querySelectorAll('.eye::before').forEach(dot => {
-                    dot.style.animation = 'dot-move-listening 2s infinite';
-                });
                 break;
             case 'speaking':
                 leftEye.style.animation = 'eye-move 4s infinite';
                 rightEye.style.animation = 'eye-move 4s infinite';
                 statusText.textContent = 'Говорение';
-                document.querySelectorAll('.eye::before').forEach(dot => {
-                    dot.style.animation = 'dot-move-speaking 1s infinite';
-                });
                 break;
         }
     }
+
+</script>
+
+<script>
+    // Access the camera
+    const video = document.getElementById('video');
+    navigator.mediaDevices.getUserMedia({video: true})
+        .then(stream => {
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            console.error("Error accessing camera: ", err);
+        });
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = video.width;
+    canvas.height = video.height;
+
+    function sendFrame() {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        canvas.toBlob(blob => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result.split(',')[1]; // Получение Base64 строки
+                fetch('{% url 'recognize_face_cords_ajax' %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({photo_data: base64String}) // Отправка Base64 строки как JSON
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            const face = data[0];
+                            const eyeLeft = document.getElementById('pupil-left');
+                            const eyeRight = document.getElementById('pupil-right');
+
+                            const faceCenterX = face.x + face.w / 2;
+                            const faceCenterY = face.y + face.h / 2;
+                            const videoCenterX = video.width / 2;
+                            const videoCenterY = video.height / 2;
+                            const offsetX = (faceCenterX - videoCenterX) / video.width * 100;
+                            const offsetY = (faceCenterY - videoCenterY) / video.height * 100;
+
+                            const eyeLeftX = 50 - offsetX;
+                            const eyeLeftY = 50 + offsetY;
+                            const eyeRightX = 50 - offsetX;
+                            const eyeRightY = 50 + offsetY;
+
+                            eyeLeft.style.left = `${eyeLeftX}%`;
+                            eyeLeft.style.top = `${eyeLeftY}%`;
+                            eyeRight.style.left = `${eyeRightX}%`;
+                            eyeRight.style.top = `${eyeRightY}%`;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            };
+            reader.readAsDataURL(blob); // Преобразование blob в Base64
+        }, 'image/jpeg');
+
+    }
+
+    // Send a frame every second
+    setInterval(sendFrame, 1000);
 </script>
 </body>
 </html>
