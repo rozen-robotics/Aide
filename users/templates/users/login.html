@@ -1,0 +1,61 @@
+{% extends 'portal_base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">Добро пожаловать в Портал ВСМ</h5>
+                        <p class="card-subtitle mb-5">Войдите для дальнейшего использования Портала</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="auth-credentials m-b-xxl">
+                            <form action="{% url 'login' %}" method="post">
+                                <form method="post">
+                                    {{ form.non_field_errors }}
+                                    <div class="form-floating form-floating-outline mb-5">
+                                        <input type="text" name="{{ form.username.name }}"
+                                               id="{{ form.username.id_for_label }}"
+                                               class="form-control m-b-md" value="{{ form.username.value|default:'' }}"
+                                               placeholder="username"/>
+                                        <label for="{{ form.username.id_for_label }}">Логин:</label>
+                                        {{ form.username.errors }}
+
+                                    </div>
+                                    <div class="mb-5 form-password-toggle">
+                                        <div class="input-group input-group-merge">
+                                            <div class="form-floating form-floating-outline">
+                                                <input type="password" name="{{ form.password.name }}"
+                                                       id="{{ form.password.id_for_label }}"
+                                                       class="form-control" value="{{ form.password.value|default:'' }}"
+                                                       placeholder="&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;&#9679;"/>
+                                                <label for="{{ form.password.id_for_label }}"
+                                                >Пароль:</label>
+                                                {{ form.password.errors }}
+                                            </div>
+                                            <span class="input-group-text cursor-pointer"><i
+                                                    class="ri-eye-off-line"></i></span>
+                                        </div>
+                                    </div>
+
+                                    {% csrf_token %}
+                                    <div class="mb-5 d-flex justify-content-between">
+                                        <a href="{% url 'password_reset' %}" class="float-end mb-1">Забыли
+                                            пароль?</a>
+                                    </div>
+                                    <div class="auth-submit">
+                                        <button type="submit" class="btn btn-primary w-100">Войти</button>
+                                    </div>
+
+                                </form>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
