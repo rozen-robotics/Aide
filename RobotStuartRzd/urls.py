@@ -8,7 +8,6 @@ from django.views.static import serve
 urlpatterns = [
                   path('', include('main.urls')),
                   path('multimedia/', include('multimedia.urls')),
-                  path('robot/', include('robot.urls')),
                   path('users/', include('users.urls')),
 
                   path('admin/', admin.site.urls),

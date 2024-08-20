@@ -7,4 +7,8 @@ from users.views import *
 urlpatterns = [
     path('login/', MyLoginView.as_view(), name='login'),
     path('', include('django.contrib.auth.urls')),
+    path('api/get_train_data/<str:train_number>/', views.get_train_data, name='get_train_data'),
 ]
+
+# urls.py
+from django.urls import path, include

@@ -11,7 +11,7 @@ from multimedia.models import UserOrder, Product
 from django.contrib.auth.decorators import login_required
 import uuid
 from RobotStuartRzd.keys import youmoney_token
-from robot.functions.send_to_robot import procces_order
+from robot.send_to_robot import procces_order
 from users.models import User, TrainTicket
 
 
