@@ -116,3 +116,5 @@ def process_question_ajax(request):
             return JsonResponse({'error': 'Произошла ошибка при генерации ответа'}, status=400)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+procces_order(1,1)
