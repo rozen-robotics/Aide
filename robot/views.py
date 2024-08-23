@@ -20,6 +20,7 @@ import urllib.request
 import urllib.parse
 
 
+
 def departure_index(request):
     sync_train_data()
     return (render(request, 'robot/departure.html'))

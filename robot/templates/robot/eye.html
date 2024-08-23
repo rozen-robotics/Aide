@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Голосовой помощник</title>
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
         body {
             margin: 0;
@@ -12,7 +12,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
+            background-color: #000000;
             font-family: Arial, sans-serif;
             overflow: hidden;
         }
@@ -27,47 +27,43 @@
         }
 
         .eye {
-            width: 30%;
-            height: 70%;
-            background-color: #007bff;
-            border-radius: 30% / 30%;
+            width: 220px;
+            height: 280px;
+            border-radius: 50%;
+            border: 30px solid #7BA5F7; /* Толщина окантовки */
+            background-color: transparent; /* Прозрачный фон */
+            background-clip: padding-box; /* Оставляем фон только в рамке */
             position: relative;
-            box-shadow: 0 0 50px rgba(0, 123, 255, 0.7);
             display: flex;
             justify-content: center;
             align-items: center;
+            box-shadow: 0 0 50px rgba(123, 165, 247, 1), /* Внешняя тень */ inset 0 0 40px rgba(123, 165, 247, 1); /* Внутренняя тень */
             animation: eye-move 4s infinite;
         }
 
+
         .pupil {
             position: absolute;
-            width: 80px;
-            height: 80px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background-color: #ffffff;
+            background-color: rgb(255, 255, 255, 0.9);
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px rgb(255, 255, 255);
         }
 
 
         .status {
             position: absolute;
-            bottom: 10%;
+            bottom: 5%;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             z-index: 10;
-        }
-
-        .controls {
-            position: absolute;
-            bottom: 2%;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
+            color: #ffffff;
         }
 
         button {
@@ -83,15 +79,15 @@
             }
             30% {
                 -webkit-transform: scale3d(0.75, 1.25, 1);
-                transform: scale3d(0.9, 1.05, 1);
+                transform: scale3d(0.95, 1.05, 1);
             }
             40% {
                 -webkit-transform: scale3d(1.25, 0.9, 1);
-                transform: scale3d(1.3, 0.6, 1);
+                transform: scale3d(1.4, 0.5, 1);
             }
             50% {
                 -webkit-transform: scale3d(0.80, 1.15, 1);
-                transform: scale3d(0.80, 1.15, 1);
+                transform: scale3d(0.90, 1.15, 1);
             }
             65% {
                 -webkit-transform: scale3d(1.05, .95, 1);
@@ -164,22 +160,199 @@
             }
         }
 
-        .mask {
-            -webkit-mask-size: contain;
-            mask-size: contain;
-            -webkit-mask-repeat: no-repeat;
-            mask-repeat: no-repeat;
-            -webkit-mask-position: center;
-            mask-position: center;
-            -webkit-mask-repeat-x: no-repeat;
-            -webkit-mask-repeat-y: no-repeat;
+
+        #bars {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            bottom: 1%;
+            left: 50%;
+            transform: translateX(-50%);
+            /*     background: black; */
         }
 
-        .mask-squircle {
-            -webkit-mask-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMjAwJyBoZWlnaHQ9JzIwMCcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz48cGF0aCBkPSdNMTAwIDBDMjAgMCAwIDIwIDAgMTAwczIwIDEwMCAxMDAgMTAwIDEwMC0yMCAxMDAtMTAwUzE4MCAwIDEwMCAwWicvPjwvc3ZnPg==);
-            mask-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMjAwJyBoZWlnaHQ9JzIwMCcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz48cGF0aCBkPSdNMTAwIDBDMjAgMCAwIDIwIDAgMTAwczIwIDEwMCAxMDAgMTAwIDEwMC0yMCAxMDAtMTAwUzE4MCAwIDEwMCAwWicvPjwvc3ZnPg==);
-            clip-path: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nMjAwJyBoZWlnaHQ9JzIwMCcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJz48cGF0aCBkPSdNMTAwIDBDMjAgMCAwIDIwIDAgMTAwczIwIDEwMCAxMDAgMTAwIDEwMC0yMCAxMDAtMTAwUzE4MCAwIDEwMCAwWicvPjwvc3ZnPg==);
+        .bar {
+            background: #7BA5F7;
+            bottom: 1px;
+            height: 3px;
+            width: 10px;
+            margin: 0px 4px;
+            border-radius: 5px;
+            animation: sound 0ms -600ms linear infinite alternate;
         }
+
+        @keyframes sound {
+            0% {
+                opacity: .35;
+                height: 3px;
+            }
+            100% {
+                opacity: 1;
+                height: 70px;
+            }
+        }
+
+        .bar:nth-child(1) {
+            left: 1px;
+            animation-duration: 474ms;
+        }
+
+        .bar:nth-child(2) {
+            left: 15px;
+            animation-duration: 433ms;
+        }
+
+        .bar:nth-child(3) {
+            left: 29px;
+            animation-duration: 407ms;
+        }
+
+        .bar:nth-child(4) {
+            left: 43px;
+            animation-duration: 458ms;
+        }
+
+        .bar:nth-child(5) {
+            left: 57px;
+            animation-duration: 400ms;
+        }
+
+        .bar:nth-child(6) {
+            left: 71px;
+            animation-duration: 427ms;
+        }
+
+        .bar:nth-child(7) {
+            left: 85px;
+            animation-duration: 441ms;
+        }
+
+        .bar:nth-child(8) {
+            left: 99px;
+            animation-duration: 419ms;
+        }
+
+        .bar:nth-child(9) {
+            left: 113px;
+            animation-duration: 487ms;
+        }
+
+        .bar:nth-child(10) {
+            left: 127px;
+            animation-duration: 442ms;
+        }
+
+        .loader, .loader:before, .loader:after {
+            border-radius: 50%;
+            width: 2.5em;
+            height: 2.5em;
+            animation-fill-mode: both;
+            animation: bblFadInOut 1.8s infinite ease-in-out;
+        }
+
+        .loader {
+            color: #7BA5F7;
+            font-size: 10px;
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            bottom: 5%;
+            left: 50%;
+            transform: translateX(-50%) translateZ(0);
+            text-indent: -9999em;
+            animation-delay: -0.16s;
+        }
+
+        .loader:before,
+        .loader:after {
+            content: '';
+            position: absolute;
+            top: 0;
+        }
+
+        .loader:before {
+            left: -3.5em;
+            animation-delay: -0.32s;
+        }
+
+        .loader:after {
+            left: 3.5em;
+        }
+
+        @keyframes bblFadInOut {
+            0%, 80%, 100% {
+                box-shadow: 0 2.5em 0 -1.3em
+            }
+            40% {
+                box-shadow: 0 2.5em 0 0
+            }
+        }
+
+
+        #speech.btn {
+            border: none;
+            padding: 0;
+            border-radius: 100%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5em;
+            color: #fff;
+            padding: 0;
+            margin: 0;
+            background: #7BA5F7;
+            box-shadow: 0 0 20px #7BA5F7;
+            position: relative;
+            display: inline-block;
+            line-height: 50px;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            -ms-touch-action: manipulation;
+            touch-action: manipulation;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            background-image: none;
+        }
+
+        .pulse-ring {
+            content: '';
+            width: 60px;
+            height: 60px;
+            border: 5px solid #7BA5F7;
+            border-radius: 50%;
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            animation: pulsate infinite 2s;
+            box-shadow: 0 0 20px #7BA5F7;
+        }
+
+        @-webkit-keyframes pulsate {
+            0% {
+                -webkit-transform: scale(1, 1);
+                opacity: 1;
+            }
+            100% {
+                -webkit-transform: scale(1.3, 1.3);
+                opacity: 0;
+            }
+        }
+
+        .listening {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            bottom: 1%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
 
     </style>
 </head>
@@ -188,14 +361,37 @@
     {% csrf_token %}
 </form>
 <video id="video" width="640" height="480" autoplay style="display: none;"></video>
+
 <div class="robot">
-    <div class="eye mask mask-squircle" id="left-eye">
+    <div class="eye rotated-left-eye" id="left-eye">
         <div class="pupil" id="pupil-left"></div>
     </div>
-    <div class="eye mask mask-squircle" id="right-eye">
+    <div class="eye rotated-right-eye" id="right-eye">
         <div class="pupil" id="pupil-right"></div>
     </div>
-    <div class="status" id="status-text">Нажмите "Начать", чтобы активировать помощника.</div>
+
+    <div id="bars" style="display: none;">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+    </div>
+    <span id="loader" class="loader" style="display: none;"></span>
+    <div class="status" id="status-text">Нажмите на экран, чтобы активировать помощника.</div>
+    <div class="listening" id="listening" style="display: none;">
+        <button id="speech" class="btn" style="display: flex; justify-content: center; align-items: center;">
+            <i class="fa fa-microphone" style="font-size:24px"></i>
+        </button>
+
+        <div class="pulse-ring"></div>
+    </div>
+
 </div>
 
 <script>
@@ -216,7 +412,19 @@
         const synth = window.speechSynthesis;
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'ru-RU'; // Задаем язык озвучки
-        utterance.pitch = 0.2;
+        utterance.pitch = 1.2;
+
+        // Получаем список доступных голосов
+        const voices = synth.getVoices();
+
+        // Найдем голос по его имени или другим параметрам
+        const selectedVoice = voices.find(voice => voice.name === 'Google русский' || voice.lang === 'ru-RU');
+
+        // Назначаем выбранный голос
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
+        }
+
 
         // Pause recognition while speaking
         recognition.stop();
@@ -234,7 +442,6 @@
                 if (!userStartedSpeaking) {
                     isListeningForCommand = false;
                     setStatus('idle');
-                    loaderElement.innerText = "Скажите 'Алиса', чтобы начать";
                     recognition.stop();
                 }
             }, 15000);
@@ -242,7 +449,7 @@
     }
 
     function startRecognition() {
-        loaderElement.innerText = "Скажите 'Алиса', чтобы начать";
+        setStatus('idle')
         recognition.start();
     }
 
@@ -253,13 +460,14 @@
         }
 
 
-        if (!isListeningForCommand && transcript.toLowerCase() === "алиса") {
+        if (!isListeningForCommand && transcript.toLowerCase().includes("алиса")) {
+
             isListeningForCommand = true;
             loaderElement.innerText = "Слушаю команду...";
             setStatus('listening');
         } else if (isListeningForCommand && transcript !== "") {
             chatHistory.push({role: 'user', content: transcript});
-            loaderElement.innerText = "Отправка запроса...";
+            setStatus('search');
 
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
             try {
@@ -299,7 +507,7 @@
 
     recognition.onend = () => {
         if (!isListeningForCommand) {
-            loaderElement.innerText = "Скажите 'Алиса', чтобы начать";
+            setStatus('idle')
             recognition.start(); // Цикличное прослушивание
         }
     };
@@ -321,22 +529,39 @@
         const leftEye = document.getElementById('left-eye');
         const rightEye = document.getElementById('right-eye');
         const statusText = document.getElementById('status-text');
+        const speakingBars = document.getElementById('bars');
+        const loader = document.getElementById('loader');
+        const listening = document.getElementById('listening');
+
+        statusText.style.display = 'flex';
+        speakingBars.style.display = 'none';
+        loader.style.display = 'none';
+        listening.style.display = 'none';
+
 
         switch (status) {
             case 'idle':
                 leftEye.style.animation = 'eye-move 5s infinite';
                 rightEye.style.animation = 'eye-move 5s infinite';
-                statusText.textContent = 'Бездействие';
+                statusText.textContent = 'Скажите "Алиса", чтобы начать';
                 break;
             case 'listening':
                 leftEye.style.animation = 'eye-listening-left 2s infinite';
                 rightEye.style.animation = 'eye-listening-right 2s infinite';
-                statusText.textContent = 'Слушание';
+                statusText.style.display = 'none';
+                listening.style.display = 'flex';
+                break;
+            case 'search':
+                leftEye.style.animation = 'eye-listening-left 2s infinite';
+                rightEye.style.animation = 'eye-listening-right 2s infinite';
+                statusText.style.display = 'none';
+                loader.style.display = 'flex';
                 break;
             case 'speaking':
                 leftEye.style.animation = 'eye-move 4s infinite';
                 rightEye.style.animation = 'eye-move 4s infinite';
-                statusText.textContent = 'Говорение';
+                statusText.style.display = 'none';
+                speakingBars.style.display = 'flex';
                 break;
         }
     }
