@@ -58,7 +58,7 @@ def check_payment_status(request):
                 # Если оплата успешна, активируйте подписку
                 order.is_active = True
                 order.save()
-                procces_order(order.id, TrainTicket.objects.filter(user=user).last().seat_number)  # запрос к роботу
+                procces_order(order, TrainTicket.objects.filter(user=user).last().seat_number)  # запрос к роботу
                 return render(request, 'multimedia/success.html')
     except:
         pass
@@ -117,4 +117,4 @@ def process_question_ajax(request):
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-procces_order(1,1)
+procces_order(UserOrder.objects.all().last(),1)
