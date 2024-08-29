@@ -42,8 +42,8 @@ def recognize_face_ajax(request):
     return JsonResponse({'status': 'error', 'message': 'Некорректный запрос.'})
 
 
-def voice_controll_test(request):
-    return (render(request, 'robot/eye.html'))
+def routine(request):
+    return (render(request, 'robot/routine.html'))
 
 
 def recognize_face_cords_ajax(request):
@@ -66,7 +66,6 @@ def recognize_face_cords_ajax(request):
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
-@csrf_exempt
 def process_question_ajax(request):
     if request.method == 'POST':
         try:
@@ -88,3 +87,4 @@ def process_question_ajax(request):
             return JsonResponse({'error': 'Произошла ошибка при генерации ответа'}, status=400)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+

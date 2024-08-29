@@ -406,6 +406,7 @@
     let isListeningForCommand = false;
     let chatHistory = [];
     const loaderElement = document.getElementById("status-text");
+    let stopListeningTimeout; // Переменная для хранения таймера
 
     // Функция озвучивания текста
     function speakText(text) {
@@ -425,8 +426,7 @@
             utterance.voice = selectedVoice;
         }
 
-
-        // Pause recognition while speaking
+        // Останавливаем распознавание во время озвучивания
         recognition.stop();
         setStatus('speaking');
         synth.speak(utterance);
@@ -437,34 +437,43 @@
             setStatus('listening');
             recognition.start();
             userStartedSpeaking = false;
-            // Установка таймера на 8 секунд
-            const stopListeningTimeout = setTimeout(() => {
+
+            // Установка таймера на 10 секунд
+            stopListeningTimeout = setTimeout(() => {
                 if (!userStartedSpeaking) {
                     isListeningForCommand = false;
                     setStatus('idle');
                     recognition.stop();
                 }
-            }, 15000);
+            }, 10000);
         }
     }
 
     function startRecognition() {
-        setStatus('idle')
+        setStatus('idle');
         recognition.start();
+
     }
 
     recognition.onresult = async (event) => {
         const transcript = event.results[event.results.length - 1][0].transcript.trim();
         if (transcript !== "") {
             userStartedSpeaking = true;
+            clearTimeout(stopListeningTimeout); // Сброс таймера, если пользователь начал говорить
         }
 
-
         if (!isListeningForCommand && transcript.toLowerCase().includes("алиса")) {
-
             isListeningForCommand = true;
-            loaderElement.innerText = "Слушаю команду...";
             setStatus('listening');
+            userStartedSpeaking = false;
+            stopListeningTimeout = setTimeout(() => {
+                if (!userStartedSpeaking) {
+                    isListeningForCommand = false;
+                    setStatus('idle');
+                    recognition.stop();
+                }
+            }, 15000);
+
         } else if (isListeningForCommand && transcript !== "") {
             chatHistory.push({role: 'user', content: transcript});
             setStatus('search');
@@ -502,12 +511,18 @@
 
     recognition.onerror = (event) => {
         console.error("Ошибка распознавания:", event.error);
-        recognition.start(); // Перезапуск в случае ошибки
+        // Остановка распознавания перед перезапуском
+        recognition.stop();
+
+        // Добавляем небольшой таймаут перед повторным запуском
+        setTimeout(() => {
+            recognition.start();
+        }, 100); // Таймаут в 100 мс, чтобы дать время для завершения предыдущего процесса
     };
 
     recognition.onend = () => {
         if (!isListeningForCommand) {
-            setStatus('idle')
+            setStatus('idle');
             recognition.start(); // Цикличное прослушивание
         }
     };
@@ -538,18 +553,25 @@
         loader.style.display = 'none';
         listening.style.display = 'none';
 
-
         switch (status) {
             case 'idle':
                 leftEye.style.animation = 'eye-move 5s infinite';
                 rightEye.style.animation = 'eye-move 5s infinite';
                 statusText.textContent = 'Скажите "Алиса", чтобы начать';
+                fetch('{% url 'stop_talking_ajax' %}')
+                    .then(response => response.json())
+                    .then(data => console.log(data))
+                    .catch(error => console.error('Error:', error));
                 break;
             case 'listening':
                 leftEye.style.animation = 'eye-listening-left 2s infinite';
                 rightEye.style.animation = 'eye-listening-right 2s infinite';
                 statusText.style.display = 'none';
                 listening.style.display = 'flex';
+                fetch('{% url 'start_talking_ajax' %}')
+                    .then(response => response.json())
+                    .then(data => console.log(data))
+                    .catch(error => console.error('Error:', error));
                 break;
             case 'search':
                 leftEye.style.animation = 'eye-listening-left 2s infinite';
