@@ -25,7 +25,7 @@ def process_order_ajax(request):
 @csrf_exempt
 def start_talking_ajax(request):
     try:
-        start_talking()
+        #start_talking()
         return JsonResponse({'status': 'success'}, status=200)
     except:
         return JsonResponse({'error': 'Error'}, status=400)
@@ -33,7 +33,7 @@ def start_talking_ajax(request):
 @csrf_exempt
 def stop_talking_ajax(request):
     try:
-        stop_talking()
+        #stop_talking()
         return JsonResponse({'status': 'success'}, status=200)
     except:
         return JsonResponse({'error': 'Error'}, status=400)

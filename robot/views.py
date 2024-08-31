@@ -75,7 +75,7 @@ def process_question_ajax(request):
             # Отправка запроса на AI-сервис с использованием urllib
             ai_url = 'https://foteapi2.pythonanywhere.com/process'
             headers = {'Content-Type': 'application/json'}
-            payload = json.dumps({'request_type': 'rzd_question_answering', 'text': question}).encode('utf-8')
+            payload = json.dumps({'request_type': 'robot_question_answering', 'text': question}).encode('utf-8')
 
             req = urllib.request.Request(ai_url, data=payload, headers=headers)
             with urllib.request.urlopen(req) as response:
