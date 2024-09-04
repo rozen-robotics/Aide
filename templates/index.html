@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Robot Control</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.7.3/nipplejs.min.js"></script>
+    <style>
+        body,
+        html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000000;
+        }
+
+        #joystick {
+            width: 400px;
+            height: 400px;
+            position: absolute;
+        }
+    </style>
+    <script>
+        window.onload = function () {
+            var joystick = nipplejs.create({
+                zone: document.getElementById('joystick'),
+                mode: 'static',
+                position: { left: '50%', top: '50%' },
+                color: 'red',
+                size: 600
+            });
+
+            joystick.on('move', function (evt, data) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/move", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.send("angle=" + data.angle.degree + "&distance=" + data.distance);
+            });
+        };
+    </script>
+</head>
+
+<body
+    <div id="joystick"></div>
+</body>
+
+</html>
