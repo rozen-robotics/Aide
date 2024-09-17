@@ -1,0 +1,13 @@
+[Unit]
+Description=Aide Web-based Control Service
+After=network.target
+
+[Service]
+ExecStart=/home/rozen/web-control-server/aide-web-control/bin/python3.9 /home/rozen/web-control-server/Aide/app.py
+WorkingDirectory=/home/rozen/web-control-server/
+Restart=always
+User=rozen
+Group=rozen
+
+[Install]
+WantedBy=multi-user.target
