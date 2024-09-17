@@ -78,6 +78,11 @@
                 recognitionInProgress = true;
 
                 const context = videoCanvas.getContext('2d');
+                context.save();
+                context.translate(videoCanvas.width, videoCanvas.height);
+                context.rotate(Math.PI);
+                context.drawImage(videoCanvas, 0, 0, videoCanvas.width, videoCanvas.height);
+                context.restore();
                 const imageDataURL = videoCanvas.toDataURL('image/png');
 
                 fetch('{% url 'recognize_face_ajax' %}', {
