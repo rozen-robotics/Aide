@@ -2,8 +2,6 @@ import json
 import urllib.request
 import urllib.parse
 
-from flask import jsonify
-
 from RobotStuartDjangoRobot import settings
 
 is_talking_now = False
