@@ -395,151 +395,150 @@
 </div>
 
 <script>
+    window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'ru-RU';
+    recognition.interimResults = false;
+    recognition.continuous = true;
+    let userStartedSpeaking = false;
+
     let isListeningForCommand = false;
     let chatHistory = [];
     const loaderElement = document.getElementById("status-text");
-    let stopListeningTimeout;
-    let isTalking = false;
+    let stopListeningTimeout; // Переменная для хранения таймера
 
+    // Функция озвучивания текста
     function speakText(text) {
         const synth = window.speechSynthesis;
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'ru-RU';
+        utterance.lang = 'ru-RU'; // Задаем язык озвучки
         utterance.pitch = 1.2;
 
+        // Получаем список доступных голосов
         const voices = synth.getVoices();
+
+        // Найдем голос по его имени или другим параметрам
         const selectedVoice = voices.find(voice => voice.name === 'Google русский' || voice.lang === 'ru-RU');
+
+        // Назначаем выбранный голос
         if (selectedVoice) {
             utterance.voice = selectedVoice;
         }
 
+        // Останавливаем распознавание во время озвучивания
+        recognition.stop();
         setStatus('speaking');
-        isTalking = true;
         synth.speak(utterance);
 
+        // Отслеживаем окончание озвучивания
         utterance.onend = () => {
             loaderElement.innerText = "Робот все сказал";
             setStatus('listening');
-            startListening(8000);
-            isTalking = false;
+            recognition.start();
+            userStartedSpeaking = false;
+
+            // Установка таймера на 10 секунд
+            stopListeningTimeout = setTimeout(() => {
+                if (!userStartedSpeaking) {
+                    isListeningForCommand = false;
+                    setStatus('idle');
+                    recognition.stop();
+                }
+            }, 10000);
         }
     }
-
-    let mediaRecorder;
 
     function startRecognition() {
         setStatus('idle');
-        startListening(2000);
+        recognition.start();
+
     }
 
-    function startListening(duration) {
-        navigator.mediaDevices.getUserMedia({audio: true})
-            .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.start();
-
-                const audioChunks = [];
-                mediaRecorder.addEventListener("dataavailable", event => {
-                    audioChunks.push(event.data);
-                });
-
-                mediaRecorder.addEventListener("stop", () => {
-                    const audioBlob = new Blob(audioChunks);
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        const base64String = reader.result.split(',')[1];
-                        sendAudioToServer(base64String);
-                    };
-                    reader.readAsDataURL(audioBlob);
-                });
-
-                setTimeout(() => {
-                    stopRecording();
-                }, duration);
-            });
-    }
-
-    function stopRecording() {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
+    recognition.onresult = async (event) => {
+        const transcript = event.results[event.results.length - 1][0].transcript.trim();
+        if (transcript !== "") {
+            userStartedSpeaking = true;
+            clearTimeout(stopListeningTimeout); // Сброс таймера, если пользователь начал говорить
         }
-    }
 
-    function sendAudioToServer(base64String) {
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        fetch('{% url 'process_audio_ajax' %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify({audio_data: base64String})
-        })
-            .then(response => response.json())
-            .then(data => {
-                const transcript = data.transcript;
-                handleTranscript(transcript);
-            })
-            .catch(error => {
-                console.error("Ошибка:", error);
-                setStatus('idle');
-                loaderElement.innerText = "Произошла ошибка, скажите 'Алиса' для повторного начала.";
-                isListeningForCommand = false;
-            });
-    }
-
-    function handleTranscript(transcript) {
         if (!isListeningForCommand && transcript.toLowerCase().includes("алиса")) {
             isListeningForCommand = true;
             setStatus('listening');
-            startListening(8000);
+            userStartedSpeaking = false;
+            stopListeningTimeout = setTimeout(() => {
+                if (!userStartedSpeaking) {
+                    isListeningForCommand = false;
+                    setStatus('idle');
+                    recognition.stop();
+                }
+            }, 15000);
+
         } else if (isListeningForCommand && transcript !== "") {
             chatHistory.push({role: 'user', content: transcript});
             setStatus('search');
 
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            fetch('{% url 'process_question_ajax' %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                body: JSON.stringify({
-                    request_type: 'question_answering',
-                    text: `Вот история чата: ${chatHistory.map(entry => `${entry.role}: ${entry.content}`).join(' ')}`
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    chatHistory.push({role: 'assistant', content: data.response});
-                    console.log("Ответ:", data.response);
-                    loaderElement.innerText = "Ответ получен. Озвучиваю...";
-                    speakText(data.response);
-                })
-                .catch(error => {
-                    console.error("Ошибка:", error);
-                    setStatus('idle');
-                    loaderElement.innerText = "Произошла ошибка, скажите 'Алиса' для повторного начала.";
-                    isListeningForCommand = false;
+            try {
+                const response = await fetch('{% url 'process_question_ajax' %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({
+                        request_type: 'question_answering',
+                        text: `Вот история чата: ${chatHistory.map(entry => `${entry.role}: ${entry.content}`).join(' ')}`
+                    })
                 });
-        } else if (isListeningForCommand && transcript === "") {
-            setStatus('idle');
-            isListeningForCommand = false;
-            loaderElement.innerText = "Ничего не услышано. Скажите 'Алиса' для начала.";
-            startListening(2000);
-        }
-    }
 
-    document.body.addEventListener('click', () => {
+                const data = await response.json();
+                chatHistory.push({role: 'assistant', content: data.response});
+                console.log("Ответ:", data.response);
+                loaderElement.innerText = "Ответ получен. Озвучиваю...";
+
+                // Озвучка ответа и ожидание следующего ввода пользователя
+                speakText(data.response);
+            } catch (error) {
+                console.error("Ошибка:", error);
+                setStatus('idle');
+                loaderElement.innerText = "Произошла ошибка, скажите 'Алиса' для повторного начала.";
+                isListeningForCommand = false;
+                recognition.start();
+            }
+        }
+    };
+
+    recognition.onerror = (event) => {
+        console.error("Ошибка распознавания:", event.error);
+        // Остановка распознавания перед перезапуском
+        recognition.stop();
+
+        // Добавляем небольшой таймаут перед повторным запуском
+        setTimeout(() => {
+            recognition.start();
+        }, 100); // Таймаут в 100 мс, чтобы дать время для завершения предыдущего процесса
+    };
+
+    recognition.onend = () => {
         if (!isListeningForCommand) {
+            setStatus('idle');
+            recognition.start(); // Цикличное прослушивание
+        }
+    };
+
+    // Начинаем прослушивание после первого нажатия
+    document.body.addEventListener('click', () => {
+        if (!recognition.running) {
             startRecognition();
         }
     }, {once: true});
 
+    // Очистка истории чата каждые 2 минуты
     setInterval(() => {
         chatHistory = [];
         console.log("История чата очищена.");
-    }, 120000);
+    }, 120000); // 120000 миллисекунд = 2 минуты
 
     function setStatus(status) {
         const leftEye = document.getElementById('left-eye');

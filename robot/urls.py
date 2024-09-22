@@ -10,6 +10,4 @@ urlpatterns = [
     path('process_question_ajax/', views.process_question_ajax, name='process_question_ajax'),
     path('recognize_face_cords_ajax/', views.recognize_face_cords_ajax, name='recognize_face_cords_ajax'),
 
-    path('process_audio_ajax/', views.process_audio_ajax, name='process_audio_ajax'),
-
 ]
