@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление роботом</title>
+    <style>
+        #joystick {
+            width: 200px;
+            height: 200px;
+            border: 1px solid black;
+            border-radius: 50%;
+            position: relative;
+            margin: 50px auto;
+        }
+
+        #stick {
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            border-radius: 50%;
+            position: absolute;
+            left: 90px;
+            top: 90px;
+        }
+        #coffee-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div id="joystick">
+    <div id="stick"></div>
+</div>
+<button id="coffee-button">Сделать кофе</button>
+
+<script>
+    const joystick = document.getElementById('joystick');
+    const stick = document.getElementById('stick');
+    let isDragging = false;
+
+    joystick.addEventListener('mousedown', startDragging);
+    joystick.addEventListener('mousemove', drag);
+    joystick.addEventListener('mouseup', stopDragging);
+    joystick.addEventListener('mouseleave', stopDragging);
+
+    joystick.addEventListener('touchstart', startDragging);
+    joystick.addEventListener('touchmove', drag);
+    joystick.addEventListener('touchend', stopDragging);
+
+    function startDragging(e) {
+        isDragging = true;
+    }
+
+    function stopDragging(e) {
+        isDragging = false;
+        stick.style.left = '90px';
+        stick.style.top = '90px';
+        sendJoystickData(0, 0);
+    }
+
+    function drag(e) {
+        if (!isDragging) return;
+
+        let clientX, clientY;
+        if (e.type === 'touchmove') {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        const rect = joystick.getBoundingClientRect();
+        const x = clientX - rect.left - 100;
+        const y = clientY - rect.top - 100;
+
+        const angle = Math.atan2(y, x) * (180 / Math.PI);
+        const distance = Math.min(Math.sqrt(x * x + y * y), 100);
+
+        stick.style.left = (x + 100 - 10) + 'px';
+        stick.style.top = (y + 100 - 10) + 'px';
+
+        sendJoystickData(angle, distance);
+    }
+
+    function sendJoystickData(angle, distance) {
+        fetch('http://90.156.203.227:8000/joystick', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                angle: angle,
+                distance: distance
+            })
+        }).then(response => response.json())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Добавляем обработчик для кнопки "Сделать кофе"
+    document.getElementById('coffee-button').addEventListener('click', function() {
+        fetch('http://localhost:8000/make_coffee', {
+            method: 'POST',
+        }).then(response => response.json())
+          .then(data => console.log(data))
+          .catch(error => console.error('Error:', error));
+    });
+</script>
+</body>
+</html>
