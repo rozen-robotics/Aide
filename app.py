@@ -4,6 +4,7 @@ import odrive
 import time
 from math import cos, sin, radians
 import subprocess
+import random
 
 max_speed = 0.5
 app = Flask(__name__)
@@ -103,7 +104,8 @@ def make_coffee():
 @app.route('/say_phrase', methods=['POST'])
 def say_phrase():
     phrase_number = request.form['value']
-    audio_file = f"audio/{phrase_number}.wav"
+  
+    audio_file = f"audio/{phrase_number}/{random.randint(0, 4)}.wav"
 
     speak_audio_by_disk(audio_file)
 
