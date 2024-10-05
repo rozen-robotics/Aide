@@ -14,6 +14,7 @@ app = Flask(__name__)
 # log.success('Connected!')
 
 is_coffe_making = False
+is_speaking = False
 
 
 def amap(value, from_low, from_high, to_low, to_high):
@@ -40,6 +41,11 @@ def clamp(value, max_value):
 
 
 def speak_audio_by_disk(path):
+    global is_speaking
+    if is_speaking or is_coffe_making:
+        return
+    
+    is_speaking = True
     player_stream = pyaudio.PyAudio().open(format=pyaudio.paInt16, channels=1, rate=24000, output=True)
 
     with open(path, 'rb') as wav_file:
@@ -52,6 +58,7 @@ def speak_audio_by_disk(path):
 
     player_stream.stop_stream()
     player_stream.close()
+    is_speaking = False
 
 
 @app.route('/')
@@ -61,8 +68,8 @@ def index():
 
 @app.route('/move', methods=['POST'])
 def move():
-    if is_coffe_making:
-        return 'OK'
+    if is_coffe_making or is_speaking:
+        return 'Робот занят'
     angle = float(request.form['angle'])
     distance = amap(float(request.form['distance']), 0, 200, 0, max_speed)
     x, y = polar_to_cartesian(distance, angle)
@@ -92,17 +99,21 @@ def move():
 @app.route('/make_coffee', methods=['POST'])
 def make_coffee():
     global is_coffe_making
+    if is_coffe_making or is_speaking:
+        return 'Робот занят'
     is_coffe_making = True
     from coffe import make_coffe
     speak_audio_by_disk('audio/make_coffe.wav')
     make_coffe()
     speak_audio_by_disk('audio/coffe_done.wav')
     is_coffe_making = False
-    return 'Coffee making initiated'
+    return 'Кофе приготовлен'
 
 
 @app.route('/say_phrase', methods=['POST'])
 def say_phrase():
+    if is_coffe_making or is_speaking:
+        return 'Робот занят'
     phrase_number = request.form['value']
   
     audio_file = f"audio/{phrase_number}/{random.randint(0, 4)}.wav"
@@ -110,7 +121,7 @@ def say_phrase():
     speak_audio_by_disk(audio_file)
 
     print(f"Воспроизведение {audio_file}")
-    return f'Воспроизведение фразы {phrase_number}'
+    return f'Фраза {phrase_number} воспроизведена'
 
 
 if __name__ == '__main__':
